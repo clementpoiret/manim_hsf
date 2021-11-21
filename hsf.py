@@ -95,24 +95,93 @@ class StateOfNeed(BaseHsf):
         self.play(FadeOut(title))
 
 
-class Preprocessing(BaseHsf):
+class Preprocessing(ZoomedScene):
+
+    def __init__(self, **kwargs):
+        ZoomedScene.__init__(self,
+                             zoom_factor=0.3,
+                             zoomed_display_height=1.5,
+                             zoomed_display_width=3.5,
+                             image_frame_stroke_width=20,
+                             zoomed_camera_config={
+                                 "default_frame_stroke_width": 3,
+                             },
+                             **kwargs)
 
     def construct(self):
-        super().construct()
+        logo = SVGMobject("assets/images/hsf.svg").scale(0.2).to_corner(UL)
+        authorship = Text(
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            weight="THIN",
+            font="Open Sans")
+        affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
+                            weight="THIN",
+                            font="Open Sans")
+
+        self.add(logo.move_to(LEFT * 6.6 + UP * 3.6),
+                 authorship.scale(0.25).next_to(logo, RIGHT * 0.5),
+                 affiliations.scale(0.25).move_to(DOWN * 3.6 + LEFT * 5))
 
         title = Text("Preprocessing", font="Open Sans")
         subtitle = Text("ROILoc", slant=ITALIC, weight=LIGHT,
                         font="Open Sans").scale(0.4)
 
         self.next_section("Preprocessing", PresentationSectionType.NORMAL)
-
         self.play(FadeIn(title))
         self.play(title.animate.scale(0.75).move_to(UP * 3))
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
 
+        self.next_section("Preprocessing.1", PresentationSectionType.SUB_NORMAL)
+        t2w = ImageMobject("assets/images/t2w.png").scale(0.4).move_to(LEFT * 4)
+        self.play(FadeIn(t2w))
+        self.wait(2)
+
+        self.next_section("Preprocessing.2", PresentationSectionType.SUB_NORMAL)
+        zoomed_camera = self.zoomed_camera
+        zoomed_display = self.zoomed_display
+        frame = zoomed_camera.frame
+        zoomed_display_frame = zoomed_display.display_frame
+
+        frame.move_to(5 * LEFT + 0.6 * UP)
+        frame.set_color(WHITE)
+        zoomed_display_frame.set_color(WHITE)
+        self.wait(2)
+
+        zoomed_display.move_to(UP)
+
+        zd_rect = BackgroundRectangle(zoomed_display,
+                                      fill_opacity=0,
+                                      buff=MED_SMALL_BUFF)
+        self.add_foreground_mobject(zd_rect)
+
+        unfold_camera = UpdateFromFunc(
+            zd_rect, lambda rect: rect.replace(zoomed_display))
+
+        self.play(Create(frame))
+        self.activate_zooming()
+
+        self.play(self.get_zoomed_display_pop_out_animation(), unfold_camera)
+        self.wait(1)
+        hr = MathTex("H_r").set_color(RED).move_to(zoomed_display)
+        self.play(FadeIn(hr), frame.animate.shift(1.9 * RIGHT),
+                  zoomed_display.animate.move_to(DOWN))
+        self.wait(1)
+        hl = MathTex("H_l").set_color(PURPLE).move_to(zoomed_display)
+        self.play(FadeIn(hl))
+        self.play(self.get_zoomed_display_pop_out_animation(),
+                  unfold_camera,
+                  rate_func=lambda t: smooth(1 - t))
+        self.play(Uncreate(zoomed_display_frame), FadeOut(frame), FadeOut(t2w))
+        self.play(hr.animate.move_to(0.5 * UP + 4 * LEFT),
+                  hl.animate.move_to(0.5 * DOWN + 4 * LEFT))
+        self.wait(1)
+
+        hippocampi = VGroup(hr, hl)
+        self.play(Circumscribe(hippocampi, color=WHITE))
+
         self.next_section("Preprocessing.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle))
+        self.play(FadeOut(title, subtitle, hippocampi))
 
 
 class Segmentation(BaseHsf):
@@ -206,12 +275,13 @@ class BaggingTta(BaseHsf):
     def construct(self):
         super().construct()
 
-        self.next_section("TTA", PresentationSectionType.NORMAL)
+        self.next_section("BaggingTta", PresentationSectionType.NORMAL)
         tta = Text("Test-Time Augmentation", font="Open Sans")
         self.play(FadeIn(tta))
+        self.play(Circumscribe(tta, color=WHITE))
         self.wait()
 
-        self.next_section("TTA.1", PresentationSectionType.SUB_NORMAL)
+        self.next_section("BaggingTta.1", PresentationSectionType.SUB_NORMAL)
         mri = Text("This is an MRI", font="Open Sans").scale(0.75)
         mri.to_corner(UP + LEFT)
         mri.shift(DOWN)
@@ -225,14 +295,14 @@ class BaggingTta(BaseHsf):
         self.add(grid)  # Make sure title is on top of grid
         self.play(Create(grid, run_time=3, lag_ratio=0.1))
 
-        self.next_section("TTA.2", PresentationSectionType.SUB_NORMAL)
+        self.next_section("BaggingTta.2", PresentationSectionType.SUB_NORMAL)
         self.play(FadeIn(affine),
                   grid.animate.scale(1.5).shift(UP * 0.3 + LEFT * 0.4).rotate(
                       PI / 6),
                   run_time=3)
         self.wait()
 
-        self.next_section("TTA.3", PresentationSectionType.SUB_NORMAL)
+        self.next_section("BaggingTta.3", PresentationSectionType.SUB_NORMAL)
         elastic = Text("Elastic Transformations", font="Open Sans").scale(0.5)
         elastic.move_to(affine, UL)
         grid.prepare_for_nonlinear_transform()
@@ -247,7 +317,7 @@ class BaggingTta(BaseHsf):
         )
         self.wait(2)
 
-        self.next_section("TTA.End", PresentationSectionType.SUB_SKIP)
+        self.next_section("BaggingTta.End", PresentationSectionType.SUB_SKIP)
         self.play(FadeOut(tta, affine, grid))
 
 
