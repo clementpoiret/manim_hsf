@@ -130,7 +130,7 @@ class Preprocessing(ZoomedScene):
         self.play(FadeIn(title))
         self.play(title.animate.scale(0.75).move_to(UP * 3))
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
-        self.wait(2)
+        self.wait(1)
 
         self.next_section("Preprocessing.1", PresentationSectionType.SUB_NORMAL)
         t2w = ImageMobject("assets/images/t2w.png").scale(0.4).move_to(LEFT * 4)
@@ -146,7 +146,7 @@ class Preprocessing(ZoomedScene):
         frame.move_to(5 * LEFT + 0.6 * UP)
         frame.set_color(WHITE)
         zoomed_display_frame.set_color(WHITE)
-        self.wait(2)
+        self.wait(1)
 
         zoomed_display.move_to(UP)
 
@@ -162,11 +162,11 @@ class Preprocessing(ZoomedScene):
         self.activate_zooming()
 
         self.play(self.get_zoomed_display_pop_out_animation(), unfold_camera)
-        self.wait(1)
+        self.wait(0.5)
         hr = MathTex("H_r").set_color(RED).move_to(zoomed_display)
         self.play(FadeIn(hr), frame.animate.shift(1.9 * RIGHT),
                   zoomed_display.animate.move_to(DOWN))
-        self.wait(1)
+        self.wait(0.5)
         hl = MathTex("H_l").set_color(PURPLE).move_to(zoomed_display)
         self.play(FadeIn(hl))
         self.play(self.get_zoomed_display_pop_out_animation(),
@@ -175,8 +175,9 @@ class Preprocessing(ZoomedScene):
         self.play(Uncreate(zoomed_display_frame), FadeOut(frame), FadeOut(t2w))
         self.play(hr.animate.move_to(0.5 * UP + 4 * LEFT),
                   hl.animate.move_to(0.5 * DOWN + 4 * LEFT))
-        self.wait(1)
+        self.wait(0.5)
 
+        self.next_section("Preprocessing.3", PresentationSectionType.SUB_NORMAL)
         hippocampi = VGroup(hr, hl)
         self.play(Circumscribe(hippocampi, color=WHITE))
 
