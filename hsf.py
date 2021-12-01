@@ -84,12 +84,56 @@ class StateOfNeed(BaseHsf):
         super().construct()
 
         title = Text("State of Need", font="Open Sans")
+        subtitle = Text(
+            "Segmenting Hippocampal Subfields in Heterogeneous Datasets",
+            slant=ITALIC,
+            weight=LIGHT,
+            font="Open Sans").scale(0.4)
 
         self.next_section("StateOfNeed", PresentationSectionType.NORMAL)
 
         self.play(FadeIn(title))
         self.play(title.animate.scale(0.75).move_to(UP * 3))
+        self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
+
+        freesurfer_title = Text(
+            "FreeSurfer",
+            font="Open Sans").to_edge(LEFT).scale(.6).shift(UP * 1.5 + RIGHT)
+        self.play(FadeIn(freesurfer_title))
+
+        fs_speed = Text("Speed: 8~12h /Subject", font="Open Sans",
+                        weight=LIGHT).scale(0.4).next_to(
+                            freesurfer_title, DOWN)
+        fs_quality = Text("Quality: Far from manual",
+                          font="Open Sans",
+                          weight=LIGHT).scale(0.4).next_to(fs_speed, DOWN)
+        self.play(FadeIn(fs_speed), FadeIn(fs_quality))
+
+        fs = VGroup(freesurfer_title, fs_speed, fs_quality)
+
+        self.wait(2)
+
+        ashs_title = Text(
+            "ASHS",
+            font="Open Sans").to_edge(RIGHT).scale(.6).shift(UP * 1.5 + LEFT)
+        self.play(FadeIn(ashs_title))
+
+        ashs_speed = Text("Speed: 1~2h /Subject",
+                          font="Open Sans",
+                          weight=LIGHT).scale(0.4).next_to(ashs_title, DOWN)
+        ashs_quality = Text("Quality: Good but not generalizable",
+                            font="Open Sans",
+                            weight=LIGHT).scale(0.4).next_to(ashs_speed, DOWN)
+        self.play(FadeIn(ashs_speed), FadeIn(ashs_quality))
+
+        ashs = VGroup(ashs_title, ashs_speed, ashs_quality)
+
+        self.wait(2)
+        deep_title = Text("Deep Learning",
+                          font="Open Sans").scale(0.6).shift(UP * 1.5)
+        self.play(fs.animate.scale(0.75), ashs.animate.scale(0.75),
+                  FadeIn(deep_title))
 
         self.next_section("StateOfNeed.End", PresentationSectionType.SUB_SKIP)
         self.play(FadeOut(title))
