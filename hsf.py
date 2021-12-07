@@ -22,11 +22,45 @@ class BaseHsf(Scene):
 class Introduction(Scene):
 
     def construct(self):
+        cea = SVGMobject("assets/logos/cea.svg").scale(0.3).move_to(DOWN * 1 +
+                                                                    LEFT * 4.8)
+        neurospin = ImageMobject("assets/logos/neurospin.png").scale(
+            0.8).next_to(cea, RIGHT)
+        ups = ImageMobject("assets/logos/ups.png").scale(0.08).next_to(
+            neurospin, RIGHT)
+        up = ImageMobject("assets/logos/up.png").scale(0.15).next_to(ups, RIGHT)
+        idris = ImageMobject("assets/logos/idris.png").scale(0.5).next_to(
+            up, RIGHT)
+        genci = ImageMobject("assets/logos/genci.png").scale(0.20).next_to(
+            idris, RIGHT)
+        onnx = ImageMobject("assets/logos/onnx.png").scale(0.06).next_to(
+            genci, RIGHT)
+        neuralmagic = ImageMobject("assets/logos/neuralmagic.png").scale(
+            0.15).next_to(onnx, RIGHT)
+        self.add(cea, neurospin, ups, up, idris, genci, onnx, neuralmagic)
+
         logo = SVGMobject("assets/images/hsf.svg").scale(0.2)
         hsf = Text("HSF", font="Open Sans")
+        subtitle = Text("as a Future-Proof Solution to",
+                        font="Open Sans").next_to(hsf, RIGHT)
+        title_1 = VGroup(hsf, subtitle)
+        subsubtitle = Text("Hippocampal Subfields Segmentation in MRI",
+                           font="Open Sans").next_to(title_1, DOWN)
+        title = VGroup(title_1, subsubtitle).scale(0.75).move_to(ORIGIN + UP)
+
         hippocampal = Text("Hippocampal", weight=BOLD, font="Open Sans")
-        segmentation = Text("Segmentation", slant=ITALIC, font="Open Sans")
-        factory = Text("Factory", weight="LIGHT", font="Open Sans")
+        segmentation = Text("Segmentation", slant=ITALIC,
+                            font="Open Sans").next_to(hippocampal, DOWN)
+        factory = Text("Factory", weight="LIGHT",
+                       font="Open Sans").next_to(segmentation, DOWN)
+        hsf_full = VGroup(hippocampal, segmentation, factory).move_to(ORIGIN)
+
+        url = Text("https://hsf.rtfd.io/",
+                   font="Open Sans",
+                   color=BLUE,
+                   slant=ITALIC).scale(0.5).next_to(hsf_full, DOWN)
+        ul = Underline(url, buff=0, color=BLUE)
+
         authorship = Text(
             "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
             weight="THIN",
@@ -36,46 +70,21 @@ class Introduction(Scene):
                             font="Open Sans")
 
         self.next_section("Intro", PresentationSectionType.NORMAL)
-        self.add(hsf)
-        self.add(logo.move_to(LEFT * 6.6 + UP * 3.6))
-        self.add(affiliations.scale(0.25).move_to(DOWN * 3.6 + LEFT * 5))
-        self.wait(2)
+        self.add(title, logo.move_to(LEFT * 6.6 + UP * 3.6),
+                 affiliations.scale(0.25).move_to(DOWN * 3.6 + LEFT * 5),
+                 authorship.scale(0.5).next_to(title, DOWN))
+        self.wait(4)
 
         self.next_section("Intro.1", PresentationSectionType.SUB_NORMAL)
-        self.play(FadeOut(hsf))
-        self.play(Write(hippocampal.move_to(UP * 2)),
-                  Write(segmentation.next_to(hippocampal, DOWN)),
-                  Write(factory.next_to(segmentation, DOWN)),
-                  FadeIn(authorship.scale(0.5).next_to(factory, DOWN)))
+        self.play(
+            FadeOut(subtitle, subsubtitle),
+            authorship.animate.scale(0.5).next_to(logo, RIGHT * 0.5),
+            FadeOut(cea, neurospin, ups, up, idris, genci, onnx, neuralmagic))
+        self.play(Transform(hsf, hsf_full), FadeIn(url, ul))
         self.wait(2)
 
         self.next_section("Intro.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(hippocampal, segmentation, factory),
-                  authorship.animate.scale(0.5).next_to(logo, RIGHT * 0.5))
-
-        # tex = MathTex(r"f(x) &= 5 + 1 + 1\\ &= 6 + 1\\ &= 7", font_size=122)
-
-        # circle = Circle()  # create a circle
-        # circle.set_fill(PINK, opacity=0.5)  # set color and transparency
-
-        # square = Square()  # create a square
-        # square.rotate(PI / 4)  # rotate a certain amount
-
-        # self.next_section("A", PresentationSectionType.NORMAL)
-        # self.play(Create(square))  # animate the creation of the square
-
-        # self.next_section("B", PresentationSectionType.NORMAL)
-        # self.play(Transform(square,
-        #                     circle))  # interpolate the square into the circle
-
-        # self.next_section("C", PresentationSectionType.NORMAL)
-        # self.play(FadeOut(square))  # fade out animation
-
-        # self.next_section("D", PresentationSectionType.NORMAL)
-        # self.play(Write(tex))  # animate the creation of the tex
-
-        # self.next_section("E", PresentationSectionType.NORMAL)
-        # self.play(FadeOut(tex))  # fade out animation
+        self.play(FadeOut(hsf, hsf_full, url, ul))
 
 
 class StateOfNeed(BaseHsf):
@@ -108,12 +117,12 @@ class StateOfNeed(BaseHsf):
         fs_quality = Text("Quality: Far from manual",
                           font="Open Sans",
                           weight=LIGHT).scale(0.4).next_to(fs_speed, DOWN)
-        self.play(FadeIn(fs_speed), FadeIn(fs_quality))
+        self.play(FadeIn(fs_speed, fs_quality))
 
         fs = VGroup(freesurfer_title, fs_speed, fs_quality)
-
         self.wait(2)
 
+        self.next_section("StateOfNeed.1", PresentationSectionType.SUB_NORMAL)
         ashs_title = Text(
             "ASHS",
             font="Open Sans").to_edge(RIGHT).scale(.6).shift(UP * 1.5 + LEFT)
@@ -125,18 +134,25 @@ class StateOfNeed(BaseHsf):
         ashs_quality = Text("Quality: Good but not generalizable",
                             font="Open Sans",
                             weight=LIGHT).scale(0.4).next_to(ashs_speed, DOWN)
-        self.play(FadeIn(ashs_speed), FadeIn(ashs_quality))
+        self.play(FadeIn(ashs_speed, ashs_quality))
 
         ashs = VGroup(ashs_title, ashs_speed, ashs_quality)
-
         self.wait(2)
+
+        self.next_section("StateOfNeed.2", PresentationSectionType.SUB_NORMAL)
         deep_title = Text("Deep Learning",
                           font="Open Sans").scale(0.6).shift(UP * 1.5)
+        deep_desc = Text(
+            "Speed: ~1mn /Subject, but:\n1/ private implementation,\n2/ need to be trained,\n3/ lack of generalization.",
+            font="Open Sans",
+            weight=LIGHT).scale(0.4).next_to(deep_title, DOWN)
+
         self.play(fs.animate.scale(0.75), ashs.animate.scale(0.75),
                   FadeIn(deep_title))
+        self.play(FadeIn(deep_desc))
 
         self.next_section("StateOfNeed.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title))
+        self.play(FadeOut(title, subtitle, fs, ashs, deep_title, deep_desc))
 
 
 class Preprocessing(ZoomedScene):
@@ -217,16 +233,29 @@ class Preprocessing(ZoomedScene):
                   unfold_camera,
                   rate_func=lambda t: smooth(1 - t))
         self.play(Uncreate(zoomed_display_frame), FadeOut(frame), FadeOut(t2w))
-        self.play(hr.animate.move_to(0.5 * UP + 4 * LEFT),
-                  hl.animate.move_to(0.5 * DOWN + 4 * LEFT))
+        self.play(hr.animate.move_to(0.5 * UP + 5 * LEFT),
+                  hl.animate.move_to(0.5 * DOWN + 5 * LEFT))
         self.wait(0.5)
 
         self.next_section("Preprocessing.3", PresentationSectionType.SUB_NORMAL)
         hippocampi = VGroup(hr, hl)
+        arrow_1 = Arrow(start=LEFT * 4.5, end=LEFT * 3)
+        z_norm = Text("- Z-normalization\n- Shape .% 8 == 0",
+                      font="Open Sans").scale(0.75)
+        arrow_2 = Arrow(start=RIGHT, end=RIGHT * 2.5)
+        segmentation = Text("Segmentation", font="Open Sans").scale(0.75)
         self.play(Circumscribe(hippocampi, color=WHITE))
+        self.play(Create(arrow_1))
+        self.play(FadeIn(z_norm.next_to(arrow_1, 1.5 * RIGHT)))
+        self.play(Create(arrow_2))
+        self.play(FadeIn(segmentation.next_to(arrow_2, 1.5 * RIGHT)))
+        self.play(Circumscribe(segmentation, color=WHITE))
+        self.wait(2)
 
         self.next_section("Preprocessing.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle, hippocampi))
+        self.play(
+            FadeOut(title, subtitle, hippocampi, arrow_1, z_norm, arrow_2),
+            segmentation.animate.scale(1.25).move_to(ORIGIN))
 
 
 class Segmentation(BaseHsf):
@@ -243,7 +272,7 @@ class Segmentation(BaseHsf):
 
         self.next_section("Segmentation", PresentationSectionType.NORMAL)
 
-        self.play(FadeIn(title))
+        self.add(title)
         self.play(title.animate.scale(0.75).move_to(UP * 3))
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
@@ -313,6 +342,67 @@ majority vote approaches 100%.""",
 
         self.next_section("Segmentation.End", PresentationSectionType.SUB_SKIP)
         self.play(FadeOut(title, subtitle, dp, dp_all, line, cj, cj_desc))
+
+
+class BayesError(MovingCameraScene):
+
+    def construct(self):
+        logo = SVGMobject("assets/images/hsf.svg").scale(0.2).to_corner(UL)
+        authorship = Text(
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            weight="THIN",
+            font="Open Sans")
+        affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
+                            weight="THIN",
+                            font="Open Sans")
+
+        self.add(logo.move_to(LEFT * 6.6 + UP * 3.6),
+                 authorship.scale(0.25).next_to(logo, RIGHT * 0.5),
+                 affiliations.scale(0.25).move_to(DOWN * 3.6 + LEFT * 5))
+
+        self.next_section("Bayes", PresentationSectionType.NORMAL)
+
+        self.camera.frame.save_state()
+
+        # create the axes and the curve
+        ax = Axes(x_range=[-1, 10], y_range=[-1, 10])
+        labels = ax.get_axis_labels(x_label=Tex("$N_{models}$"),
+                                    y_label=Tex("Error"))
+
+        loss = ax.plot(lambda x: 1 / x + 1, color=BLUE, x_range=[0.115, 9])
+        label_1 = Tex("$Loss_{seg}$", color=BLUE).move_to(DOWN + 2.5 * LEFT)
+        optimal = DashedVMobject(ax.plot(lambda x: 1, color=RED, x_range=[0,
+                                                                          9]))
+        label_2 = Text("Bayes Optimal Error",
+                       color=RED).scale(0.5).next_to(optimal,
+                                                     0.5 * DOWN).shift(3 * LEFT)
+
+        # create dots based on the graph
+        moving_dot = Dot(ax.i2gp(loss.t_min, loss), color=WHITE)
+        dot_1 = Dot(ax.i2gp(loss.t_min, loss))
+        dot_2 = Dot(ax.i2gp(loss.t_max, loss))
+
+        self.play(FadeIn(ax, labels, loss, dot_1, dot_2, moving_dot))
+        self.play(self.camera.frame.animate.scale(0.5).move_to(moving_dot))
+
+        def update_curve(mob):
+            mob.move_to(moving_dot.get_center())
+
+        self.camera.frame.add_updater(update_curve)
+        self.play(MoveAlongPath(moving_dot, loss, rate_func=linear))
+        self.camera.frame.remove_updater(update_curve)
+
+        self.play(Restore(self.camera.frame), FadeIn(label_1))
+        self.wait(1)
+
+        self.next_section("Bayes.1", PresentationSectionType.SUB_NORMAL)
+        self.play(Create(optimal), FadeIn(label_2))
+        self.wait(4)
+
+        self.next_section("Bayes.End", PresentationSectionType.SUB_SKIP)
+        self.play(
+            FadeOut(ax, labels, loss, dot_1, dot_2, moving_dot, optimal,
+                    label_1, label_2))
 
 
 class BaggingTta(BaseHsf):
