@@ -1,5 +1,8 @@
 from manim import *
+from manim.animation.animation import DEFAULT_ANIMATION_RUN_TIME
 from manim_editor import PresentationSectionType
+import imageio
+import numpy as np
 
 
 class BaseHsf(Scene):
@@ -105,6 +108,7 @@ class StateOfNeed(BaseHsf):
         self.play(title.animate.scale(0.75).move_to(UP * 3))
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
+        self.next_section("StateOfNeed.1", PresentationSectionType.SUB_NORMAL)
 
         freesurfer_title = Text(
             "FreeSurfer",
@@ -122,7 +126,7 @@ class StateOfNeed(BaseHsf):
         fs = VGroup(freesurfer_title, fs_speed, fs_quality)
         self.wait(2)
 
-        self.next_section("StateOfNeed.1", PresentationSectionType.SUB_NORMAL)
+        self.next_section("StateOfNeed.2", PresentationSectionType.SUB_NORMAL)
         ashs_title = Text(
             "ASHS",
             font="Open Sans").to_edge(RIGHT).scale(.6).shift(UP * 1.5 + LEFT)
@@ -139,7 +143,7 @@ class StateOfNeed(BaseHsf):
         ashs = VGroup(ashs_title, ashs_speed, ashs_quality)
         self.wait(2)
 
-        self.next_section("StateOfNeed.2", PresentationSectionType.SUB_NORMAL)
+        self.next_section("StateOfNeed.3", PresentationSectionType.SUB_NORMAL)
         deep_title = Text("Deep Learning",
                           font="Open Sans").scale(0.6).shift(UP * 1.5)
         deep_desc = Text(
@@ -150,9 +154,61 @@ class StateOfNeed(BaseHsf):
         self.play(fs.animate.scale(0.75), ashs.animate.scale(0.75),
                   FadeIn(deep_title))
         self.play(FadeIn(deep_desc))
+        self.wait(2)
+
+        self.next_section("StateOfNeed.4", PresentationSectionType.SUB_NORMAL)
+        deep = VGroup(deep_title, deep_desc)
+        line = Line(start=LEFT * 4, end=RIGHT * 4, color=WHITE)
+        self.play(deep.animate.scale(0.75))
+        self.play(
+            fs.animate.scale(0.8).shift(.5 * UP),
+            ashs.animate.scale(0.8).shift(.5 * UP),
+            deep.animate.scale(0.8).shift(.5 * UP))
+        self.play(Create(line.next_to(deep, DOWN)))
+
+        hsf_title = Text("HSF", font="Open Sans").scale(0.75)
+        affiliation = Text("HPE Jean-Zay Supercomputer (IDRIS/GENCI)",
+                           font="Open Sans",
+                           weight=LIGHT,
+                           slant=ITALIC).scale(0.5).next_to(hsf_title,
+                                                            RIGHT,
+                                                            aligned_edge=DOWN)
+        hsf = VGroup(hsf_title, affiliation).next_to(line, DOWN)
+        self.play(FadeIn(hsf, affiliation))
+
+        sota_impl = Text("SotA Implementation",
+                         font="Open Sans").scale(0.5).next_to(hsf, DOWN).shift(
+                             LEFT * 4)
+        impl = Text("""1/ U-Net w/ self-attention (Oktay et al., 2018),
+2/ AdamW w/ weight decay (Loshchilov, et al., 2017),
+3/ Stochastic Weight Averaging (Izmailov, et al., 2019),
+4/ SwitchNorm (Luo, et al., 2019),
+5/ Pruning & int8 Quantization.
+""",
+                    font="Open Sans",
+                    weight=LIGHT).scale(0.4).next_to(sota_impl,
+                                                     DOWN).shift(.5 * RIGHT)
+        self.play(FadeIn(sota_impl, impl))
+
+        datasets = Text("12 Datasets", font="Open Sans").scale(0.5).next_to(
+            hsf, DOWN).shift(RIGHT * 4)
+        datadesc = Text("""Age: 4-80 years old,
+Condition: Healthy, Epileptic, Sclerosis, MCI,
+    Alzheimer's Disease, Post-Mortem,
+Magnetic Field: 3T, 4T, 7T,
+Contrast: T1w, 3D T2w, Coro T2w.
+""",
+                        font="Open Sans",
+                        weight=LIGHT).scale(0.4).next_to(datasets, DOWN)
+
+        self.play(FadeIn(datasets, datadesc))
+
+        self.wait(4)
 
         self.next_section("StateOfNeed.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle, fs, ashs, deep_title, deep_desc))
+        self.play(
+            FadeOut(title, subtitle, fs, ashs, deep_title, deep_desc, line, hsf,
+                    sota_impl, impl, datasets, datadesc))
 
 
 class Preprocessing(ZoomedScene):
@@ -278,27 +334,40 @@ class Segmentation(BaseHsf):
         self.wait(2)
 
         # Condorcet Jury Theorem
-        self.next_section("Segmentation.2", PresentationSectionType.SUB_NORMAL)
-        cj = Text("Condorcet Jury Theorem", font="Open Sans")
-        cj_desc = Text("""
-A majority vote classifies correctly with
-higher probability than any person (model),
-and as the number of people (models)
-becomes large, the accuracy of the
-majority vote approaches 100%.""",
-                       font="Open Sans",
-                       weight=LIGHT).scale(0.4)
+        self.next_section("Segmentation.1", PresentationSectionType.SUB_NORMAL)
+        cj_eq = Tex(
+            r"$p_m = \sum_{i = \lceil m / 2 \rceil}^{m}{\left(\frac{m!}{(m-i)! \cdot i!}\right)} \cdot p^i \cdot (1-p)^{m-i}$"
+        )
+        cj = Text("Condorcet Jury Theorem", font="Open Sans").move_to(UP)
+        cj_desc_1 = Tex(r"""If there are $m$ voters that\\
+decide by simple majority voting, and each\\
+voter has the probability $p$ of making the\\
+right decision, then the probability of the\\
+entire jury of making the right decision is:\\""").scale(0.4)
+        cj_desc_2 = Tex(r"""Thus, if $p > 0.5$ then $p_m > p$. This means\\
+that the ensemble has a higher probability\\
+of making the correct decision than any\\
+individual voter. When the number of voters\\
+increases, the probability of the ensemble to\\
+make the right decision also increases. Ideally,\\
+when $m \rightarrow \infty$, $p_m \rightarrow 1$.\\""").scale(0.4)
 
-        self.play(FadeIn(cj))
-        self.play(cj.animate.scale(0.5).move_to(UP + LEFT * 4))
-        self.play(FadeIn(cj_desc.next_to(cj, DOWN).shift(RIGHT * 0.15)))
+        self.play(FadeIn(cj), Write(cj_eq))
+
+        self.next_section("Segmentation.2", PresentationSectionType.SUB_NORMAL)
+        self.play(
+            cj.animate.scale(0.5).move_to(UP + LEFT * 4),
+            cj_eq.animate.scale(0.5).move_to(LEFT * 4 + DOWN))
+
+        self.play(FadeIn(cj_desc_1.next_to(cj_eq, UP)),
+                  FadeIn(cj_desc_2.next_to(cj_eq, DOWN)))
         self.wait(2)
 
         # Diversity Prediction Theorem
         self.next_section("Segmentation.3", PresentationSectionType.SUB_NORMAL)
         dp = Text("Diversity Prediction Theorem",
                   font="Open Sans").scale(0.5).move_to(UP + RIGHT * 4)
-        self.play(FadeOut(cj, cj_desc))
+        self.play(FadeOut(cj, cj_desc_1, cj_desc_2, cj_eq))
         dp_theorem_0 = MathTex(r"(\bar{M} - V)^2")
         dp_theorem_eq = MathTex(r"=")
         dp_theorem_1 = MathTex(r"\sum_{i=1}^{N}{\frac{(M_i-V)^2}{N}")
@@ -337,11 +406,13 @@ majority vote approaches 100%.""",
         dp_all = VGroup(dp_theorem, dp_sub, brace_0, eq_text_0, brace_1,
                         eq_text_1, brace_2, eq_text_2)
         self.play(FadeIn(dp), dp_all.animate.scale(0.5).next_to(dp, DOWN))
-        self.play(Create(line), FadeIn(cj, cj_desc))
+        self.play(Create(line), FadeIn(cj, cj_desc_1, cj_desc_2, cj_eq))
         self.wait(2)
 
         self.next_section("Segmentation.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle, dp, dp_all, line, cj, cj_desc))
+        self.play(
+            FadeOut(title, subtitle, dp, dp_all, line, cj, cj_desc_1, cj_desc_2,
+                    cj_eq))
 
 
 class BayesError(MovingCameraScene):
@@ -462,7 +533,7 @@ class Postprocessing(BaseHsf):
         super().construct()
 
         title = Text("Postprocessing", font="Open Sans")
-        subtitle = Text("Aleatoric Uncertainty",
+        subtitle = Text("Plurality Voting & Aleatoric Uncertainty",
                         slant=ITALIC,
                         weight=LIGHT,
                         font="Open Sans").scale(0.4)
@@ -474,9 +545,56 @@ class Postprocessing(BaseHsf):
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
 
+        self.next_section("Postprocessing.1",
+                          PresentationSectionType.SUB_NORMAL)
+
+        voting_title = Text("Label Fusion as\nPlurality Voting",
+                            font="Open Sans").scale(0.5).next_to(
+                                subtitle, DOWN).shift(4 * LEFT + .5 * DOWN)
+        voting = Text(
+            "The winning class (i.e. hippocampal\nsubfields) is the candidate that has the\nmaximum total number of votes.",
+            font="Open Sans",
+            weight=LIGHT).scale(0.4).next_to(voting_title, DOWN)
+
+        self.play(FadeIn(voting_title, voting))
+        self.wait(2)
+
+        self.next_section("Postprocessing.2",
+                          PresentationSectionType.SUB_NORMAL)
+        self.play(FadeOut(voting_title, voting))
+        unc = Text("Aleatoric Uncertainty",
+                   font="Open Sans").scale(0.5).next_to(
+                       subtitle, DOWN).shift(4 * RIGHT + .5 * DOWN)
+        unc_sub = Text(
+            "The uncertainty is estimated by measuring how\ndiverse the predictions for a given image are.",
+            font="Open Sans",
+            weight=LIGHT).scale(0.4).next_to(unc, DOWN)
+        unc_eq = Tex(
+            r"$H(Y^i|X) \approx - \sum^M_{m=1}{\hat{p}^i_m \ln \hat{p}^i_m}$")
+
+        unc_desc_1 = Tex(
+            r"Given a set $Y$ of $i$ predictions, in HSF\\the voxel-wise Aleatoric Uncertainty\\$H(Y^i|X)$ is defined as in Wang, et al., 2019:"
+        ).scale(0.75).next_to(unc_eq, UP)
+        unc_desc_2 = Tex(
+            r"where $\hat{p}^i_m$ is the frequency\\of the $m$th unique value in $Y^i$."
+        ).scale(0.75).next_to(unc_eq, DOWN)
+        self.play(Write(unc_eq), FadeIn(unc_desc_1, unc_desc_2))
+        self.wait(2)
+
+        self.next_section("Postprocessing.3",
+                          PresentationSectionType.SUB_NORMAL)
+        unc_all = VGroup(unc_eq, unc_desc_1, unc_desc_2)
+        self.play(FadeIn(unc), FadeIn(unc_sub),
+                  unc_all.animate.scale(0.8).next_to(unc_sub, DOWN))
+        line = Line(UP * 0.5, DOWN * 0.5)
+        self.play(Create(line), FadeIn(voting_title, voting))
+        self.wait(2)
+
         self.next_section("Postprocessing.End",
                           PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle))
+        self.play(
+            FadeOut(title, subtitle, unc, unc_sub, unc_all, line, voting,
+                    voting_title))
 
 
 class PreliminaryResults(BaseHsf):
@@ -499,3 +617,37 @@ class PreliminaryResults(BaseHsf):
 
         self.next_section("Results.End", PresentationSectionType.SUB_SKIP)
         self.play(FadeOut(title, subtitle))
+
+
+class End(BaseHsf):
+
+    def construct(self):
+        super().construct()
+
+        title = Text("Thank you for your attention!", font="Open Sans")
+        # img = ImageMobject("assets/images/monster.apng")
+        self.next_section("End", PresentationSectionType.NORMAL)
+
+        self.play(FadeIn(title))
+        self.play(title.animate.scale(0.75).move_to(UP * 3))
+
+        im = imageio.get_reader("assets/images/monster.gif")
+        gif = []
+        for frame in im:
+            gif.append(ImageMobject(frame))
+
+        gif *= 3
+
+        for i, frame in enumerate(gif):
+            if i == 0:
+                self.play(FadeIn(frame))
+            else:
+                self.add(frame)
+            self.wait(0.04)
+            if i != len(gif) - 1:
+                self.remove(frame)
+
+        self.wait(2)
+
+        self.next_section("End.End", PresentationSectionType.SUB_SKIP)
+        self.play(FadeOut(title, frame))
