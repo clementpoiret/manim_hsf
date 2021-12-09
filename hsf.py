@@ -1,8 +1,7 @@
-from manim import *
-from manim.animation.animation import DEFAULT_ANIMATION_RUN_TIME
-from manim_editor import PresentationSectionType
 import imageio
 import numpy as np
+from manim import *
+from manim_editor import PresentationSectionType
 
 
 class BaseHsf(Scene):
@@ -10,7 +9,7 @@ class BaseHsf(Scene):
     def construct(self):
         logo = SVGMobject("assets/images/hsf.svg").scale(0.2).to_corner(UL)
         authorship = Text(
-            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, F. Lemaître, M. Noulhiane",
             weight="THIN",
             font="Open Sans")
         affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
@@ -65,7 +64,7 @@ class Introduction(Scene):
         ul = Underline(url, buff=0, color=BLUE)
 
         authorship = Text(
-            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, F. Lemaître, M. Noulhiane",
             weight="THIN",
             font="Open Sans")
         affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
@@ -227,7 +226,7 @@ class Preprocessing(ZoomedScene):
     def construct(self):
         logo = SVGMobject("assets/images/hsf.svg").scale(0.2).to_corner(UL)
         authorship = Text(
-            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, F. Lemaître, M. Noulhiane",
             weight="THIN",
             font="Open Sans")
         affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
@@ -420,7 +419,7 @@ class BayesError(MovingCameraScene):
     def construct(self):
         logo = SVGMobject("assets/images/hsf.svg").scale(0.2).to_corner(UL)
         authorship = Text(
-            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, M. Noulhiane",
+            "C. Poiret, A. Bouyeure, S. Patil, E. Duchesnay, A. Grigis, F. Lemaître, M. Noulhiane",
             weight="THIN",
             font="Open Sans")
         affiliations = Text("CEA Saclay | NeuroSpin | UNIACT/Inserm U1141",
@@ -613,10 +612,50 @@ class PreliminaryResults(BaseHsf):
         self.play(FadeIn(title))
         self.play(title.animate.scale(0.75).move_to(UP * 3))
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
-        self.wait(2)
+        self.wait(1)
+
+        segmentation = Text("Segmentation", font="Open Sans").scale(0.4).rotate(
+            np.pi / 2).to_edge(LEFT).shift(UP + RIGHT)
+        uncertainty = Text("Uncertainty", font="Open Sans").scale(0.4).rotate(
+            np.pi / 2).to_edge(LEFT).shift(DOWN + RIGHT)
+
+        t1w_seg = ImageMobject("assets/images/t1w_seg.png").next_to(
+            segmentation, RIGHT).shift(.5 * RIGHT)
+        t1w_unc = ImageMobject("assets/images/t1w_unc.png").next_to(
+            uncertainty, RIGHT).shift(.5 * RIGHT)
+        t1w_title = Text("T1w\nHealthy", font="Open Sans",
+                         weight=LIGHT).scale(0.4).next_to(t1w_unc, DOWN)
+
+        t2w_seg = ImageMobject("assets/images/t2w_seg.png").next_to(
+            t1w_seg, RIGHT).shift(.5 * RIGHT)
+        t2w_unc = ImageMobject("assets/images/t2w_unc.png").next_to(
+            t1w_unc, RIGHT).shift(.5 * RIGHT)
+        t2w_title = Text("T2w\nHealthy", font="Open Sans",
+                         weight=LIGHT).scale(0.4).next_to(t2w_unc, DOWN)
+
+        t2w_seg2 = ImageMobject("assets/images/t2w_seg2.png").next_to(
+            t2w_seg, RIGHT).shift(.5 * RIGHT)
+        t2w_unc2 = ImageMobject("assets/images/t2w_unc2.png").next_to(
+            t2w_unc, RIGHT).shift(.5 * RIGHT)
+        t2w_title2 = Text("T2w\nSclerosis\nMotion Artifacts",
+                          font="Open Sans",
+                          weight=LIGHT).scale(0.4).next_to(t2w_unc2, DOWN)
+
+        self.play(FadeIn(segmentation, uncertainty))
+
+        self.play(FadeIn(t1w_seg, t1w_unc, t1w_title))
+
+        self.play(FadeIn(t2w_seg, t2w_unc, t2w_title))
+
+        self.play(FadeIn(t2w_seg2, t2w_unc2, t2w_title2))
+
+        self.wait(4)
 
         self.next_section("Results.End", PresentationSectionType.SUB_SKIP)
-        self.play(FadeOut(title, subtitle))
+        self.play(
+            FadeOut(title, subtitle, segmentation, uncertainty, t1w_seg,
+                    t1w_unc, t1w_title, t2w_seg, t2w_unc, t2w_title, t2w_seg2,
+                    t2w_unc2, t2w_title2))
 
 
 class End(BaseHsf):
