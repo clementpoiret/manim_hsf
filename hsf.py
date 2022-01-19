@@ -182,7 +182,7 @@ class StateOfNeed(BaseHsf):
 2/ AdamW w/ weight decay (Loshchilov, et al., 2017),
 3/ Stochastic Weight Averaging (Izmailov, et al., 2019),
 4/ SwitchNorm (Luo, et al., 2019),
-5/ Pruning & int8 Quantization.
+5/ Pruning & int8 Quantization (Kurtz, et al., 2020).
 """,
                     font="Open Sans",
                     weight=LIGHT).scale(0.4).next_to(sota_impl,
@@ -252,6 +252,10 @@ class Preprocessing(ZoomedScene):
         self.play(FadeIn(t2w))
         self.wait(2)
 
+        roiloc = ImageMobject("assets/images/roiloc.png").move_to(RIGHT * 4)
+        self.play(FadeIn(roiloc))
+        self.wait(2)
+
         self.next_section("Preprocessing.2", PresentationSectionType.SUB_NORMAL)
         zoomed_camera = self.zoomed_camera
         zoomed_display = self.zoomed_display
@@ -287,7 +291,8 @@ class Preprocessing(ZoomedScene):
         self.play(self.get_zoomed_display_pop_out_animation(),
                   unfold_camera,
                   rate_func=lambda t: smooth(1 - t))
-        self.play(Uncreate(zoomed_display_frame), FadeOut(frame), FadeOut(t2w))
+        self.play(Uncreate(zoomed_display_frame), FadeOut(frame), FadeOut(t2w),
+                  FadeOut(roiloc))
         self.play(hr.animate.move_to(0.5 * UP + 5 * LEFT),
                   hl.animate.move_to(0.5 * DOWN + 5 * LEFT))
         self.wait(0.5)
@@ -332,41 +337,32 @@ class Segmentation(BaseHsf):
         self.play(FadeIn(subtitle.next_to(title, DOWN)))
         self.wait(2)
 
-        # Condorcet Jury Theorem
+        # Model specs
         self.next_section("Segmentation.1", PresentationSectionType.SUB_NORMAL)
-        cj_eq = Tex(
-            r"$p_m = \sum_{i = \lceil m / 2 \rceil}^{m}{\left(\frac{m!}{(m-i)! \cdot i!}\right)} \cdot p^i \cdot (1-p)^{m-i}$"
-        )
-        cj = Text("Condorcet Jury Theorem", font="Open Sans").move_to(UP)
-        cj_desc_1 = Tex(r"""If there are $m$ voters that\\
-decide by simple majority voting, and each\\
-voter has the probability $p$ of making the\\
-right decision, then the probability of the\\
-entire jury of making the right decision is:\\""").scale(0.4)
-        cj_desc_2 = Tex(r"""Thus, if $p > 0.5$ then $p_m > p$. This means\\
-that the ensemble has a higher probability\\
-of making the correct decision than any\\
-individual voter. When the number of voters\\
-increases, the probability of the ensemble to\\
-make the right decision also increases. Ideally,\\
-when $m \rightarrow \infty$, $p_m \rightarrow 1$.\\""").scale(0.4)
+        arch = Text("Residual U-Net w/ Self-Attention", font="Open Sans")
+        multiple_models = Text("1 model; 5 states",
+                               font="Open Sans").scale(0.75).move_to(UP)
+        model_desc = Text("""35M parameters; 7M after pruning
+Self-Attention (Oktay et al., 2018)
+SwitchNorm (Luo et al., 2019)
+Trained on heterogeneous labels""",
+                          font="Open Sans").scale(0.4)
 
-        self.play(FadeIn(cj), Write(cj_eq))
+        self.play(FadeIn(multiple_models), FadeIn(arch))
 
         self.next_section("Segmentation.2", PresentationSectionType.SUB_NORMAL)
         self.play(
-            cj.animate.scale(0.5).move_to(UP + LEFT * 4),
-            cj_eq.animate.scale(0.5).move_to(LEFT * 4 + DOWN))
+            multiple_models.animate.scale(0.5).move_to(.5 * UP + LEFT * 4),
+            arch.animate.scale(0.5).move_to(LEFT * 4 + UP))
 
-        self.play(FadeIn(cj_desc_1.next_to(cj_eq, UP)),
-                  FadeIn(cj_desc_2.next_to(cj_eq, DOWN)))
+        self.play(FadeIn(model_desc.next_to(multiple_models, DOWN)))
         self.wait(2)
 
         # Diversity Prediction Theorem
         self.next_section("Segmentation.3", PresentationSectionType.SUB_NORMAL)
         dp = Text("Diversity Prediction Theorem",
                   font="Open Sans").scale(0.5).move_to(UP + RIGHT * 4)
-        self.play(FadeOut(cj, cj_desc_1, cj_desc_2, cj_eq))
+        self.play(FadeOut(arch, multiple_models, model_desc))
         dp_theorem_0 = MathTex(r"(\bar{M} - V)^2")
         dp_theorem_eq = MathTex(r"=")
         dp_theorem_1 = MathTex(r"\sum_{i=1}^{N}{\frac{(M_i-V)^2}{N}")
@@ -405,13 +401,13 @@ when $m \rightarrow \infty$, $p_m \rightarrow 1$.\\""").scale(0.4)
         dp_all = VGroup(dp_theorem, dp_sub, brace_0, eq_text_0, brace_1,
                         eq_text_1, brace_2, eq_text_2)
         self.play(FadeIn(dp), dp_all.animate.scale(0.5).next_to(dp, DOWN))
-        self.play(Create(line), FadeIn(cj, cj_desc_1, cj_desc_2, cj_eq))
+        self.play(Create(line), FadeIn(arch, multiple_models, model_desc))
         self.wait(2)
 
         self.next_section("Segmentation.End", PresentationSectionType.SUB_SKIP)
         self.play(
-            FadeOut(title, subtitle, dp, dp_all, line, cj, cj_desc_1, cj_desc_2,
-                    cj_eq))
+            FadeOut(title, subtitle, dp, dp_all, line, arch, multiple_models,
+                    model_desc))
 
 
 class BayesError(MovingCameraScene):
